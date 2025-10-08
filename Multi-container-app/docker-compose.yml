@@ -1,0 +1,30 @@
+services:
+  frontend:
+    image: my-static-site:latest   # use the local frontend image
+    ports:
+      - "8082:80"
+    depends_on:
+      - backend
+    networks:
+      - my-network
+    environment:
+      - API_URL=http://backend:5000/
+
+  backend:
+    image: my-docker-compose-app-backend:latest   # use the local backend image
+    ports:
+      - "5001:5000"
+    networks:
+      - my-network
+    environment:
+      - API_URL=http://backend:5000/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  my-network:
+    driver: bridge

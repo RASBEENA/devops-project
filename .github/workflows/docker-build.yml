@@ -1,0 +1,46 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Docker Buildx (for modern builds)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Build backend image
+      - name: Build Backend Image
+        run: |
+          docker build -t my-backend:latest ./Multi-container-app/backend
+
+      # 4. Build frontend image
+      - name: Build Frontend Image
+        run: |
+          docker build -t my-frontend:latest ..\my-static-website
+
+      # 5. (Optional) Save both images as artifacts so you can download them from GitHub
+      - name: Save Docker Images
+        run: |
+          mkdir -p images
+          docker save my-backend:latest -o images/my-backend.tar
+          docker save my-frontend:latest -o images/my-frontend.tar
+
+      # 6. Upload artifacts using latest version
+      - name: Upload Images as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-images
+          path: images/
